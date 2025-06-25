@@ -1,8 +1,14 @@
-# errors [![Travis-CI](https://travis-ci.org/pkg/errors.svg)](https://travis-ci.org/pkg/errors) [![AppVeyor](https://ci.appveyor.com/api/projects/status/b98mptawhudj53ep/branch/master?svg=true)](https://ci.appveyor.com/project/davecheney/errors/branch/master) [![GoDoc](https://godoc.org/github.com/pkg/errors?status.svg)](http://godoc.org/github.com/pkg/errors) [![Report card](https://goreportcard.com/badge/github.com/pkg/errors)](https://goreportcard.com/report/github.com/pkg/errors) [![Sourcegraph](https://sourcegraph.com/github.com/pkg/errors/-/badge.svg)](https://sourcegraph.com/github.com/pkg/errors?badge)
+# errkit
 
-Package errors provides simple error handling primitives.
+> Forked from [github.com/pkg/errors](https://github.com/pkg/errors), with modifications.
 
-`go get github.com/pkg/errors`
+While preserving the original design philosophy, `errkit` introduces minor changes and may behave differently in specific cases—particularly in how `Cause` behaves.
+
+## Disclaimer
+- Tests are currently **insufficient** and may not cover all original test cases.
+- The behavior of `Cause` is **not identical** to the original package; compatibility is not guaranteed.
+
+## Motivation
 
 The traditional error handling idiom in Go is roughly akin to
 ```go
@@ -16,7 +22,7 @@ which applied recursively up the call stack results in error reports without con
 
 The errors.Wrap function returns a new error that adds context to the original error. For example
 ```go
-_, err := ioutil.ReadAll(r)
+_, err := os.ReadAll(r)
 if err != nil {
         return errors.Wrap(err, "read failed")
 }
@@ -39,20 +45,8 @@ default:
 }
 ```
 
-[Read the package documentation for more information](https://godoc.org/github.com/pkg/errors).
+[Read the package documentation for more information](https://godoc.org/github.com/cancue/errkit).
 
-## Roadmap
-
-With the upcoming [Go2 error proposals](https://go.googlesource.com/proposal/+/master/design/go2draft.md) this package is moving into maintenance mode. The roadmap for a 1.0 release is as follows:
-
-- 0.9. Remove pre Go 1.9 and Go 1.10 support, address outstanding pull requests (if possible)
-- 1.0. Final release.
-
-## Contributing
-
-Because of the Go2 errors changes, this package is not accepting proposals for new functionality. With that said, we welcome pull requests, bug fixes and issue reports. 
-
-Before sending a PR, please discuss your change by raising an issue.
 
 ## License
 

@@ -1,6 +1,4 @@
-// +build go1.7
-
-package errors
+package errkit
 
 import (
 	"fmt"
@@ -97,7 +95,7 @@ func BenchmarkStackFormatting(b *testing.B) {
 		name := fmt.Sprintf("%s-stacktrace-%d", r.format, r.stack)
 		b.Run(name, func(b *testing.B) {
 			err := yesErrors(0, r.stack)
-			st := err.(*fundamental).stack.StackTrace()
+			st := err.(*withStack).stack.StackTrace()
 			b.ReportAllocs()
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {

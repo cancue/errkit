@@ -1,7 +1,6 @@
-package errors
+package errkit
 
 import (
-	"fmt"
 	"runtime"
 	"testing"
 )
@@ -32,8 +31,8 @@ func TestFrameFormat(t *testing.T) {
 	}, {
 		initpc,
 		"%+s",
-		"github.com/pkg/errors.init\n" +
-			"\t.+/github.com/pkg/errors/stack_test.go",
+		"github.com/cancue/errkit/errkit.init\n" +
+			"\t.+/errkit/stack_test.go",
 	}, {
 		0,
 		"%s",
@@ -45,7 +44,7 @@ func TestFrameFormat(t *testing.T) {
 	}, {
 		initpc,
 		"%d",
-		"9",
+		"8",
 	}, {
 		0,
 		"%d",
@@ -75,12 +74,12 @@ func TestFrameFormat(t *testing.T) {
 	}, {
 		initpc,
 		"%v",
-		"stack_test.go:9",
+		"stack_test.go:8",
 	}, {
 		initpc,
 		"%+v",
-		"github.com/pkg/errors.init\n" +
-			"\t.+/github.com/pkg/errors/stack_test.go:9",
+		"github.com/cancue/errkit/errkit.init\n" +
+			"\t.+/errkit/errkit/stack_test.go:8",
 	}, {
 		0,
 		"%v",
@@ -98,7 +97,7 @@ func TestFuncname(t *testing.T) {
 	}{
 		{"", ""},
 		{"runtime.main", "main"},
-		{"github.com/pkg/errors.funcname", "funcname"},
+		{"github.com/cancue/errkit/errkit.funcname", "funcname"},
 		{"funcname", "funcname"},
 		{"io.copyBuffer", "copyBuffer"},
 		{"main.(*R).Write", "(*R).Write"},
@@ -119,44 +118,24 @@ func TestStackTrace(t *testing.T) {
 		want []string
 	}{{
 		New("ooh"), []string{
-			"github.com/pkg/errors.TestStackTrace\n" +
-				"\t.+/github.com/pkg/errors/stack_test.go:121",
+			"github.com/cancue/errkit/errkit.TestStackTrace\n" +
+				"\t.+/errkit/stack_test.go:120",
 		},
 	}, {
 		Wrap(New("ooh"), "ahh"), []string{
-			"github.com/pkg/errors.TestStackTrace\n" +
-				"\t.+/github.com/pkg/errors/stack_test.go:126", // this is the stack of Wrap, not New
-		},
-	}, {
-		Cause(Wrap(New("ooh"), "ahh")), []string{
-			"github.com/pkg/errors.TestStackTrace\n" +
-				"\t.+/github.com/pkg/errors/stack_test.go:131", // this is the stack of New
+			"github.com/cancue/errkit/errkit.TestStackTrace\n" +
+				"\t.+/errkit/stack_test.go:125", // this is the stack of Wrap, not New
 		},
 	}, {
 		func() error { return New("ooh") }(), []string{
-			`github.com/pkg/errors.TestStackTrace.func1` +
-				"\n\t.+/github.com/pkg/errors/stack_test.go:136", // this is the stack of New
-			"github.com/pkg/errors.TestStackTrace\n" +
-				"\t.+/github.com/pkg/errors/stack_test.go:136", // this is the stack of New's caller
-		},
-	}, {
-		Cause(func() error {
-			return func() error {
-				return Errorf("hello %s", fmt.Sprintf("world: %s", "ooh"))
-			}()
-		}()), []string{
-			`github.com/pkg/errors.TestStackTrace.func2.1` +
-				"\n\t.+/github.com/pkg/errors/stack_test.go:145", // this is the stack of Errorf
-			`github.com/pkg/errors.TestStackTrace.func2` +
-				"\n\t.+/github.com/pkg/errors/stack_test.go:146", // this is the stack of Errorf's caller
-			"github.com/pkg/errors.TestStackTrace\n" +
-				"\t.+/github.com/pkg/errors/stack_test.go:147", // this is the stack of Errorf's caller's caller
+			`github.com/cancue/errkit/errkit.TestStackTrace.func1` +
+				"\n\t.+/errkit/stack_test.go:130", // this is the stack of New
+			"github.com/cancue/errkit/errkit.TestStackTrace\n" +
+				"\t.+/errkit/stack_test.go:130", // this is the stack of New's caller
 		},
 	}}
 	for i, tt := range tests {
-		x, ok := tt.err.(interface {
-			StackTrace() StackTrace
-		})
+		x, ok := tt.err.(StackTracer)
 		if !ok {
 			t.Errorf("expected %#v to implement StackTrace() StackTrace", tt.err)
 			continue
@@ -196,7 +175,7 @@ func TestStackTraceFormat(t *testing.T) {
 	}, {
 		nil,
 		"%#v",
-		`\[\]errors.Frame\(nil\)`,
+		`\[\]errkit.Frame\(nil\)`,
 	}, {
 		make(StackTrace, 0),
 		"%s",
@@ -212,7 +191,7 @@ func TestStackTraceFormat(t *testing.T) {
 	}, {
 		make(StackTrace, 0),
 		"%#v",
-		`\[\]errors.Frame{}`,
+		`\[\]errkit.Frame{}`,
 	}, {
 		stackTrace()[:2],
 		"%s",
@@ -220,19 +199,19 @@ func TestStackTraceFormat(t *testing.T) {
 	}, {
 		stackTrace()[:2],
 		"%v",
-		`\[stack_test.go:174 stack_test.go:221\]`,
+		`\[stack_test.go:153 stack_test.go:200\]`,
 	}, {
 		stackTrace()[:2],
 		"%+v",
 		"\n" +
-			"github.com/pkg/errors.stackTrace\n" +
-			"\t.+/github.com/pkg/errors/stack_test.go:174\n" +
-			"github.com/pkg/errors.TestStackTraceFormat\n" +
-			"\t.+/github.com/pkg/errors/stack_test.go:225",
+			"github.com/cancue/errkit/errkit.stackTrace\n" +
+			"\t.+/errkit/stack_test.go:153\n" +
+			"github.com/cancue/errkit/errkit.TestStackTraceFormat\n" +
+			"\t.+/errkit/stack_test.go:204",
 	}, {
 		stackTrace()[:2],
 		"%#v",
-		`\[\]errors.Frame{stack_test.go:174, stack_test.go:233}`,
+		`\[\]errkit.Frame{stack_test.go:153, stack_test.go:212}`,
 	}}
 
 	for i, tt := range tests {
